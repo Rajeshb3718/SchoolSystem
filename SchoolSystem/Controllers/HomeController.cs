@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SchoolSystem.Data.Contract;
 using SchoolSystem.Data.Repository.Entities;
+using Microsoft.AspNetCore.Authorization;
 using SchoolSystem.Models.ViewModels;
+using LearnAPI.Service;
 
 namespace SchoolSystem.Controllers
 {
@@ -9,15 +11,36 @@ namespace SchoolSystem.Controllers
     [Route("[controller]")]
     public class HomeController : ControllerBase
     {
+        private readonly IAuthentication _authentication;
         private readonly IDbClassRepository _dbClass;
         private readonly IDbStudentRepository _dbStudentRepository;
 
-        public HomeController(IDbClassRepository dbClass, IDbStudentRepository dbStudentRepository)
+
+        public HomeController(IDbClassRepository dbClass, IDbStudentRepository dbStudentRepository, IAuthentication authentication)
         {
             _dbClass = dbClass;
             _dbStudentRepository = dbStudentRepository;
+            _authentication = authentication;
         }
+        /// <summary>
+        /// Get class data
+        /// </summary>
+        /// <returns>
+        /// Returns class data
+        /// </returns>
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("/login")]
+
+        public string Login(string username, string password)
+        {
+            return _authentication.Authenticate(username, password);
+             
+
+        }
         /// <summary>
         /// Get class data
         /// </summary>
@@ -30,6 +53,7 @@ namespace SchoolSystem.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("/Get-class")]
+        [Authorize]
         public async Task<IActionResult> GetClassData()
         {
             var classData = await _dbClass.GetClass();
